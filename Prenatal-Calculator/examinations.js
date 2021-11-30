@@ -46,7 +46,7 @@ export default [
         10,
         40,
         "",
-        "",
+        "https://de.praenatal-medizin.de/diagnostik/genetik/nipt/",
         "#FBB06A"
     )
 ]
