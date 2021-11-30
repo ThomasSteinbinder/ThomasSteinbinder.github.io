@@ -47,6 +47,6 @@ export default [
         40,
         "",
         "",
-        "FBB06A"
+        "#FBB06A"
     )
 ]
