@@ -1,7 +1,7 @@
 import GermanLang from "./localization/lang-de.js"
 import EnglishLang from "./localization/lang-en.js"
 import PregnancyDates from "./pregnancyCalculator.js";
-import GetExaminations from "./examinations.js"
+import { getExaminations, getWeekRangeString } from "./examinations.js"
 
 window.mSecsPerDay = 1000 * 60 * 60 * 24;
 window.pregnancyWeeks = 40;
@@ -33,7 +33,7 @@ window.selectLanguage = function (language) {
 }
 
 window.calculate = function () {
-    window.examinations = GetExaminations();
+    window.examinations = getExaminations();
     let birthDateString = document.getElementById("date").value;
     let birthDate = dateFromUnformattedString(birthDateString);
     if (document.getElementById("dateTypeSelect").value == "period") {
@@ -63,16 +63,34 @@ window.calculate = function () {
 
     $("#examsTable tr").remove();
     let tableHtml = '';
+    let examIndex = 0;
     examinations.forEach(exam => {
-        tableHtml += '<tr><td>' + exam.name +
-            '</td><td>' + exam.fromWeek + "-" + exam.toWeek +
-            '</td><td>' + dateToGermanString(pregnancy.firstDayOfPregnancyWeek(exam.fromWeek)) +
+        tableHtml += '<tr role="button" id="exam' + examIndex + '"><td>' + exam.name +
+            '</td><td>' + getWeekRangeString(exam.fromWeek, exam.toWeek) +
+            '</td><td>' + dateToGermanString(pregnancy.firstDayOfPregnancyWeek(exam.fromWeek, exam.fromWeekOffset)) +
             '</td><td>' + dateToGermanString(pregnancy.lastDayOfPregnancyWeek(exam.toWeek)) +
             '</td><td> <a href="' + exam.link + '" target="_blank" rel="noopener noreferrer">' +
             '<i class="bi bi-info-circle-fill h4" style="color: ' + exam.color + ';"></i>' +
-            '</a> </td></tr>';
+            '</a> </td>' +
+            '<td><i id="chevron' + examIndex + '" class="bi bi-chevron-up h4"></i></td></tr>' +
+            '<tr><td colspan=5 id="descri' + examIndex + '" style="display: none;"> <p class="examDescription">&#10551; ' + exam.description + '</p> </td></tr>';
+            examIndex++;
     });
     $('#examsTable').html(tableHtml);
+
+    for (let i = 0; i < examinations.length; i++) {
+        $('#exam' + i).click(function() {
+            if ($('#descri' + i).is(":visible")) {
+                $('#descri' + i).hide();
+                $('#chevron' + i).removeClass("bi-chevron-down");
+                $('#chevron' + i).addClass("bi-chevron-up");
+            } else {
+                $('#descri' + i).show();
+                $('#chevron' + i).removeClass("bi-chevron-up");
+                $('#chevron' + i).addClass("bi-chevron-down");
+            }
+        });
+    }
 }
 
 function dateFromUnformattedString(dateString) {
@@ -83,14 +101,18 @@ function dateFromUnformattedString(dateString) {
 }
 
 function dateToGermanString(date) {
-    let day = date.getDate().toString();
-    let month = (date.getMonth() + 1).toString();
-    let year = date.getFullYear().toString();
+    if (date == null) {
+        return "-"
+    } else {
+        let day = date.getDate().toString();
+        let month = (date.getMonth() + 1).toString();
+        let year = date.getFullYear().toString();
 
-    // add leading 0's
-    day = (day.length > 1) ? day : "0" + day;
-    month = (month.length > 1) ? month : "0" + month;
-    year = (year.length > 1) ? year : "0" + year;
+        // add leading 0's
+        day = (day.length > 1) ? day : "0" + day;
+        month = (month.length > 1) ? month : "0" + month;
+        year = (year.length > 1) ? year : "0" + year;
 
-    return day + "." + month + "." + year;
+        return day + "." + month + "." + year;
+    }    
 }
